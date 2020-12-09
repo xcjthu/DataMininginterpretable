@@ -1,6 +1,7 @@
 from math import log
+import math
 import numpy as np
-import json
+
 
 class DecisionTree():
 	def __init__(self):
@@ -20,7 +21,7 @@ class DecisionTree():
 
 	def chooseBestFeature(self, X, Y, featList):
 		baseEntropy = self.calInfoEnt(Y)
-		bestInfoGain = 0
+		bestInfoGain = -math.inf
 		bestFeature = -1
 		for i in featList:
 			featValue = set(X[:,i])
@@ -51,12 +52,13 @@ class DecisionTree():
 
 
 	def treeGenerate(self, subX: np.ndarray, subY: np.ndarray, featList):
+		#print(subY.shape)
 		if len(set(subY.tolist())) == 1:
-			return subY[0]
+			return int(subY[0])
 		if len(featList) == 0:
-			return self.mostClass(subY)
+			return int(self.mostClass(subY))
 		bestFeat = self.chooseBestFeature(subX, subY, featList)
-		myTree = {}
+		myTree = {'default': int(self.mostClass(subY))}
 		nextFeatList = featList.copy()
 		nextFeatList.remove(bestFeat)
 		featValue = set(subX[:,bestFeat])
@@ -67,8 +69,12 @@ class DecisionTree():
 		return (bestFeat, myTree)
 
 	def fit(self, X, Y):
+		if type(X) == list:
+			X = np.array(X)
+		if type(Y) == list:
+			Y = np.array(Y)
 		self.tree = self.treeGenerate(X, Y, list(range(X.shape[1])))
-		
+
 	def predict(self, X):
 		y_pred = []
 		for ins in X:
@@ -76,14 +82,14 @@ class DecisionTree():
 				ins = ins.tolist()
 			node = self.tree
 			while True:
-				newnode = node[1][ins[node[0]]]
+				if ins[node[0]] not in node[1]:
+					newnode = node[1]['default']
+				else:
+					newnode = node[1][ins[node[0]]]
 				if type(newnode) == int:
 					y_pred.append(newnode)
 					break
 				else:
 					node = newnode
 		return y_pred
-
-
-
 
