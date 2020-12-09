@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import label_binarize
+from sklearn.metrics import f1_score
 
 def read(datapath):
 	fin = open(datapath, 'r')
@@ -25,7 +26,10 @@ y = [d[1] for d in data]
 y = label_binarize(y, classes=list(range(3)))
 x_train, x_test, y_train, y_test = train_test_split(x, y)
 print('training')
-model = OneVsRestClassifier(SVC(kernel='linear'))
+model = OneVsRestClassifier(SVC(kernel='rbf'))
 model.fit(x_train, y_train)
 print('testing')
-print(model.score(x_test, y_test))
+y_pred = model.predict(x_test)
+print(f1_score(y_test, y_pred, average='macro'))
+print(f1_score(y_test, y_pred, average='micro'))
+
